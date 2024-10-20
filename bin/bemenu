@@ -1,0 +1,11 @@
+#! /usr/bin/env nix-shell
+#!nix-shell -i bash -p bemenu jq
+
+set -efux
+set -o pipefail
+
+HERE=$(realpath $(dirname $0))
+export SELECTOR=bemenu
+export CMD=$0
+exec bash "$HERE"/../lib/bash_runner
+

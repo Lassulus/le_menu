@@ -1,0 +1,27 @@
+#/usr/bin/env bash
+
+set -efux
+set -o pipefail
+
+SELECTOR=${SELECTOR:-fzf}
+input=$(cat)
+key=$(echo "$input" | jq -r 'keys[]' | $SELECTOR)
+
+action=$(echo "$input" | jq --arg key "$key" -r '.[$key] | keys[]')
+length=$(echo "$action" | wc -l)
+if [[ "$length" > 1 ]]; then
+  echo "action is ambiguous" >&2
+  exit 1
+elif [[ "length" == 0 ]]; then
+  echo "no action found" >&2
+  exit 1
+else
+  if [[ "$action" == run ]]; then
+    exec $(echo "$input" | jq --arg key "$key" -r '.[$key].run')
+  elif [[ "$action" == submenu ]]; then
+    echo "$input" | jq --arg key "$key" -r '.[$key].submenu' | exec bash "$CMD"
+  else
+    echo "unknown action $action" >&2
+    exit 1
+  fi
+fi
