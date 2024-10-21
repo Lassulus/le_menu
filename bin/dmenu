@@ -1,11 +1,13 @@
-#! /usr/bin/env nix-shell
+#!/usr/bin/env nix-shell
 #!nix-shell -i bash -p dmenu jq
 
 set -efux
 set -o pipefail
 
-HERE=$(realpath $(dirname $0))
-export SELECTOR=dmenu
-export CMD=$0
-exec bash "$HERE"/../lib/bash_runner
+if ! type -p json2menu &>/dev/null; then
+  PATH=$PATH:"$(dirname "$0")"
+  export PATH
+fi
 
+export SELECTOR=dmenu
+exec bash le_menu

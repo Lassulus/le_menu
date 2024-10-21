@@ -15,7 +15,7 @@
     flake-parts.lib.mkFlake { inherit inputs; } (
       { self, lib, ... }:
       let
-        runners = lib.attrNames (builtins.readDir ./bin);
+        runners = builtins.filter (x: x != "le_menu") (lib.attrNames (builtins.readDir ./bin));
       in
       {
         imports = [ ./treefmt.nix ];
@@ -27,7 +27,7 @@
           "x86_64-darwin"
           "aarch64-darwin"
         ];
-        flake.lib.types = import ./lib/types.nix { inherit lib; };
+        flake.lib = import ./lib { inherit lib runners; };
         flake.nixosModules = {
           le_menu =
             { ... }:
@@ -42,8 +42,24 @@
             };
         };
         perSystem =
-          { ... }:
+          { pkgs, self', ... }:
           {
+            packages =
+              (lib.genAttrs runners (
+                name:
+                pkgs.writeShellApplication {
+                  name = "le_menu_${name}";
+                  runtimeInputs = [ self'.packages.le_menu ] ++ self.lib.getDepsFromNixShell pkgs ./bin/${name};
+                  text = builtins.readFile ./bin/${name};
+                }
+              ))
+              // {
+                le_menu = pkgs.writeShellApplication {
+                  name = "le_menu";
+                  runtimeInputs = [ pkgs.jq ];
+                  text = builtins.readFile ./bin/le_menu;
+                };
+              };
           };
       }
     );
