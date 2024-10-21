@@ -2,12 +2,10 @@
 let
   menuType = lib.types.attrTag {
     run = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
+      type = lib.types.str;
     };
     submenu = lib.mkOption {
-      type = lib.types.nullOr menuType;
-      default = null;
+      type = lib.types.attrsOf menuType;
     };
   };
 in
